@@ -17,14 +17,21 @@ class Weather {
   humidity: number;
   windSpeed: number;
   coordinates: Coordinates;
+  city: string;
+  icon: string;
+  date: string;
 
 
-  constructor(temp: number, hum: number, windS: number, coordinates: Coordinates) {
+
+  constructor(temp: number, hum: number, windS: number, coordinates: Coordinates, cityName: string, icon: string, date: string) {
 
     this.temperature = temp;
     this.humidity = hum;
     this.windSpeed = windS;
     this.coordinates = coordinates;
+    this.city = cityName;
+    this.icon = icon;
+    this.date = date;
   }
 }
 
@@ -70,16 +77,7 @@ class WeatherService {
 
   // TODO: Create buildGeocodeQuery method
   private buildGeocodeQuery(): string {
-
-    console.log("buildGeocodeQuery: ");
-    console.log(`this.cityName + ` + this.cityName);
-
-
     let query = `http://api.openweathermap.org/geo/1.0/direct?q=${this.cityName}&limit=5&appid=${this.apiKey}`;
-    
-    console.log("query: " + query);
-    console.log("buildGeocodeQuery: ");
-    console.log(" ");
 
     return query;
   }
@@ -87,7 +85,7 @@ class WeatherService {
   // // TODO: Create buildWeatherQuery method
   private buildCurrentWeatherQuery(coordinates: Coordinates): string {
     let query = `${this.baseURL}/data/2.5/weather?lat=${coordinates.latitude}&lon=${coordinates.longitude}&appid=${this.apiKey}`;
-   
+
     return query;
   }
 
@@ -136,14 +134,7 @@ class WeatherService {
 
     const data = await response.json();
 
-    console.log("weather data data: ", data);
-    console.log("", data);
-
     const dailyForecast = this.extractDailyData(data.list);
-
-    console.log("dailyForecast: ", dailyForecast);
-    console.log("", dailyForecast);
-
 
     return {
       city: data.city,
@@ -154,26 +145,19 @@ class WeatherService {
 
   private extractDailyData(dataPoints: any[]): any[] {
     const numberOfDays = 5;
-    const chunkSize = 8; // 40 data points / 5 days
+    //  const chunkSize = 8; // 40 data points / 5 days
     const dailyData: any[] = [];
 
-
-
     for (let i = 0; i < numberOfDays; i++) {
-    console.log("chunk: ", dataPoints.slice(i * chunkSize, (i + 1) * chunkSize))
-    }
 
-
-    for (let i = 0; i < numberOfDays; i++) {
-      console.log("i " + i)
-      console.log("chunk datapoints: ")
-      console.log("", dataPoints[i])
-      dailyData.push(dataPoints[i]);
+      i = i;
+      let j = (i*8); 
+      dailyData.push(dataPoints[j]);
     }
 
 
 
-       // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! This is Riley Martiez code showing me how he would solve this problem !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! This is Riley Martiez code showing me how he would solve this problem !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // dailyData.push(bestMatch);
     // for (let i = 0; i < numberOfDays; i++) {
     //   const chunk = dataPoints.slice(i * chunkSize, (i + 1) * chunkSize);
@@ -187,53 +171,56 @@ class WeatherService {
     //   }
     // }
 
-    console.log("dailyData: ")
-    console.log("", dailyData)
-    
-
-    console.log("dailyData: ")
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!dailyData done:  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
 
     return dailyData;
   }
 
   // // TODO: Build parseCurrentWeather method
-  private parseCurrentWeather(response: any): Weather {
+  private parseCurrentWeather(response: any, passedCityName: string): Weather {
     const temperature = response.main.temp;
     const humidity = response.main.humidity;
     const windSpeed = response.wind.speed;
+    const icon = response.weather[0].icon;
+    const cityName = passedCityName;
+    
+    const todaysDate = new Date();
+
+    let day = todaysDate.getDate();
+    let month = todaysDate.getMonth() + 1;
+    let year = todaysDate.getFullYear();
+
+    // This arrangement can be altered based on how we want the date's format to appear.
+    let currentDate = `${day}-${month}-${year}`;
 
     const coordinates: Coordinates = {
       latitude: response.coord.lat,
       longitude: response.coord.long,
     };
 
-    return new Weather(temperature, humidity, windSpeed, coordinates);
+    return new Weather(temperature, humidity, windSpeed, coordinates, cityName, icon, currentDate);
   }
 
-  private parseForecastDay(day: any, coordinates: Coordinates): Weather {
-    const temperature = day.main.temp;
-    const humidity = day.main.humidity;
-    const windSpeed = day.wind.speed;
+  private parseForecastDay(dayData: any, coordinates: Coordinates, cityName: string): Weather {
+    const temperature = dayData.main.temp;
+    const humidity = dayData.main.humidity;
+    const windSpeed = dayData.wind.speed;
+    const icon = dayData.weather[0].icon;
+    const words = dayData.dt_txt.split(" ");
+    const currentDate = words[0];
 
-    return new Weather(temperature, humidity, windSpeed, coordinates);
+    return new Weather(temperature, humidity, windSpeed, coordinates, cityName, icon, currentDate);
+
   }
 
-  private parseForecastWeather(response: any): Weather[] {
+  private parseForecastWeather(response: any, cityName: string): Weather[] {
     const forecast: Weather[] = [];
     const coordinates: Coordinates = {
       latitude: response.city.coord.lat,
       longitude: response.city.coord.lon,
     };
 
-
-    console.log("response.list ");
-    console.log("", response.list);
-
-
-    response.list.forEach((day: any) => {
-      forecast.push(this.parseForecastDay(day, coordinates));
+    response.list.forEach((dayData: any) => {
+      forecast.push(this.parseForecastDay(dayData, coordinates, cityName));
     });
 
     return forecast;
@@ -247,11 +234,10 @@ class WeatherService {
     const weatherData = await this.fetchWeatherData();
     const forecast = await this.fetchForecastWeatherData();
 
-    const currentWeather = this.parseCurrentWeather(weatherData);
-    const forecastWeather = this.parseForecastWeather(forecast);
+    const currentWeather = this.parseCurrentWeather(weatherData, this.cityName);
+    const forecastWeather = this.parseForecastWeather(forecast, cityName);
 
     forecastWeather.unshift(currentWeather);
-
 
     return forecastWeather;
 

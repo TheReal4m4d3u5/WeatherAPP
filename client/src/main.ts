@@ -47,10 +47,7 @@ const fetchWeather = async (cityName: string) => {
 
   const weatherData = await response.json();
 
-
-
   console.log('weatherData[0]: ');
-
   console.log('', weatherData[0]);
 
   renderCurrentWeather(weatherData[0]);
@@ -83,23 +80,42 @@ Render Functions
 */
 
 const renderCurrentWeather = (currentWeather: any): void => {
+
+  console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+  console.log(currentWeather)
+
+
+
+
   const { city, date, icon, iconDescription, temperature, windSpeed, humidity } =
     currentWeather;
 
     const celsius = temperature - 273.15;
-
     
     let myTemperature = ((celsius * (9.0 / 5.0)) + 32.0);
     let n = myTemperature.toFixed(2);
 
   // convert the following to typescript
-  heading.textContent = `${city} (${date})`;
+  // heading.textContent = `${city} (${date})`;
+  heading.textContent = `City: ${city} ${date}`;
+
+
+
   weatherIcon.setAttribute(
     'src',
     `https://openweathermap.org/img/w/${icon}.png`
   );
+
   weatherIcon.setAttribute('alt', iconDescription);
   weatherIcon.setAttribute('class', 'weather-img');
+
+
+
+  console.log("heading.textContent");
+  console.log(heading.textContent);
+
+  // heading.append(heading.textContent );
   heading.append(weatherIcon);
   tempEl.textContent = `Temp: ${n}°F`;
   windEl.textContent = `Wind: ${windSpeed} MPH`;
@@ -143,6 +159,8 @@ const renderForecastCard = (forecast: any) => {
 
   // Add content to elements
   cardTitle.textContent = date;
+
+
   weatherIcon.setAttribute(
     'src',
     `https://openweathermap.org/img/w/${icon}.png`
@@ -204,6 +222,7 @@ const createForecastCard = () => {
     'bg-primary',
     'h-100'
   );
+
   cardBody.classList.add('card-body', 'p-2');
   cardTitle.classList.add('card-title');
   tempEl.classList.add('card-text');
