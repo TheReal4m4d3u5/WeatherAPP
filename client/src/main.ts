@@ -100,8 +100,6 @@ const renderCurrentWeather = (currentWeather: any): void => {
   // heading.textContent = `${city} (${date})`;
   heading.textContent = `City: ${city} ${date}`;
 
-
-
   weatherIcon.setAttribute(
     'src',
     `https://openweathermap.org/img/w/${icon}.png`
