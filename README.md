@@ -80,3 +80,10 @@ This project is to create a weather app that sends weather data to a client serv
 
   averyajacobson@gmail.com 
 
+
+
+## Notes
+I was tutored my Riley Martiez code on method daily extractDailyData
+I was also tutored by Alex from the University of Minnesota on how to call all my methods. 
+
+Microsoft has updated how md are allowed to be formatted and was deleting everything after my table of contents and I was not able to add a notes section until I figured this out. 
